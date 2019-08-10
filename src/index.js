@@ -2,28 +2,57 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const client = new WebSocket('ws://st-chat.shas.tel');
+let client = new WebSocket('ws://st-chat.shas.tel');
 
 
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            messageText: null,
+            userName: null,
+            groupMessage: [],
+
         };
     }
-    componentWillMount() {
+    componentDidMount() {
         client.onopen = () => {
             console.log('WebSocket Client Connected');
         };
         client.onmessage = (message) => {
             console.log(message);
+            this.setState({
+                groupMessage: this.state.groupMessage.concat(JSON.parse(message.data))
+            })
         };
+        client.onclose = (e) => {
+            client = new WebSocket('ws://st-chat.shas.tel');
+            console.log('WebSocket Client Closed');
+            console.log('Error:',e);
+        }
+        client.onerror = (event) =>     {
+            console.log(event);
+        }
     }
-    handleSubmit() {
+
+    handleSubmit = event => {
         console.log('submit message');
+        event.preventDefault();
+        client.send(JSON.stringify({
+            from: this.state.userName,
+            message: this.state.messageText
+        }))
+        event.target.reset();
     }
-    handleChange() {
-        console.log('change message');
+    handleMessageChange = event => {
+        this.setState({
+            messageText: event.target.value
+        });
+    }
+    handleNickNameChange = event => {
+        this.setState({
+            userName: event.target.value
+        });
     }
     render() {
         return (
@@ -41,21 +70,34 @@ class App extends React.Component {
                             <div className='message'>Hello Ilya! I'm fine, how are you?</div>
                         </div>
                     </li>
+                    {
+                        this.state.groupMessage.map(data => (
+                            <li key={data.id} className='other'>
+                                <div className='msg'>
+                                    <p>{data.from}</p>
+                                    <div className='message'>{data.message}</div>
+                                </div>
+                            </li>
+                        ))
+                    }
                 </ul>
                 <div className="chatInputWrapper">
-                    <form onSubmit={this.handleSubmit}>
+                    <form onSubmit={this.handleSubmit} className="form">
                         <input
                             className="textarea input"
+                            name="userName"
                             type="text"
                             placeholder="Nickname"
-                            onChange={this.handleChange}
+                            onChange={this.handleNickNameChange}
                         />
                         <input
                             className="textarea input"
+                            name="messageText"
                             type="text"
                             placeholder="Enter your message..."
-                            onChange={this.handleChange}
+                            onChange={this.handleMessageChange}
                         />
+                        <button className="submitButton" type="submit">Send</button>
                     </form>
                 </div>
             </div>
