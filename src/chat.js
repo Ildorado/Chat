@@ -1,29 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import { createStore } from 'redux';
-import { Provider } from 'react-redux';
-import { useSelector, useDispatch, connect } from 'react-redux';
-import rootReducer from './reducers';
-import { increment } from './actions';
-import store from './store';
-const mapStateToProps = state => {
-    return { counter: state.counter };
-}
 
-// let store = createStore(
-//     rootReducer,
-//     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-// );
-
-//STORE -> GLOBALIZED STATE
-
-//ACTION
-
-//REDUCER
-
-//DISPATCH
-class App extends React.Component {
+class Chat extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -171,14 +148,4 @@ class App extends React.Component {
         )
     }
 }
-
-ReactDOM.render(
-    <Provider store={store}>
-        <App />
-    </Provider>,
-    document.getElementById('root'));
-
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
+export default Chat;
