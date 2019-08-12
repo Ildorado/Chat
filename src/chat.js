@@ -1,29 +1,32 @@
 import React from 'react';
-
+import { connect } from 'react-redux';
+import { addMessage, addfirstMessage, setUserName } from './actions';
+const mapStateToProps = state => {
+    return {
+        userName: state.userName,
+        groupMessage: state.groupMessage
+    };
+}
 class Chat extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            messageText: '',
-            userName: '',
-            groupMessage: [],
-
-        };
         this.reconnectingInterval = null;
+        this.isFirstMessage = true;
         this.chatRef = React.createRef();
+        this.chatMessageRef = React.createRef();
     }
     componentDidMount() {
-        this.setState({
-            userName: localStorage.getItem('userName')
-        })
-        // let asd = setInterval(() => useDispatch(increment()), 1000);
+        // this.setState({
+        //     userName: localStorage.getItem('userName')
+        // })
+        this.props.dispatch(setUserName(localStorage.getItem('userName')));
         console.log('local Storage userName get ', localStorage.getItem('userName'));
         this.connecting();
     }
 
     connecting() {
         this.client = new WebSocket('ws://st-chat.shas.tel');
-        let isFirstMessage = true;
+        this.isFirstMessage = true;
         this.client.onopen = () => {
             if (this.reconnectingInterval != null) {
                 console.log('WebSocket Client Reconnected');
@@ -37,34 +40,25 @@ class Chat extends React.Component {
         };
         this.client.onmessage = (message) => {
             console.log(message);
-            if (isFirstMessage) {
-                this.setState({
-                    groupMessage: JSON.parse(message.data)
-                })
-                isFirstMessage = false;
+
+            if (this.isFirstMessage) {
+
+                this.props.dispatch(addfirstMessage(JSON.parse(message.data)));
+                this.isFirstMessage = false;
                 this.scrollToBottom();
             }
             else {
-                this.setState({
-                    groupMessage: this.state.groupMessage.concat(JSON.parse(message.data))
-                })
+                this.props.dispatch(addMessage(JSON.parse(message.data)));
             }
         };
         this.client.onclose = () => {
             console.log('WebSocket Client Closed');
-            // setTimeout(function(){
-            //     client = new WebSocket('ws://st-chat.shas.tel'); 
-            // },1000);
+
             this.reconnectingInterval = setInterval(() => {
                 console.log('trying to reconnect');
                 this.connecting();
             }, 2000)
         }
-        // this.reconnectingInterval = setInterval(function () {
-        //     client = new WebSocket('ws://st-chat.shas.tel');
-        //     console.log('trying to reconnect');
-        // }, 2000)
-
     }
     scrollToBottom = () => {
         // this.chatRef.current.scrollTop = this.chatRef.current.scrollHeight;
@@ -77,42 +71,29 @@ class Chat extends React.Component {
         console.log('submit message');
         event.preventDefault();
         this.client.send(JSON.stringify({
-            from: this.state.userName,
-            message: this.state.messageText
+            from: this.props.userName,
+            message: this.chatMessageRef.current.value
         }))
-        localStorage.setItem('userName', this.state.userName);
-        this.setState({
-            messageText: ''
-        })
+        localStorage.setItem('userName', this.props.userName);
+        this.chatMessageRef.current.value = '';
     }
-    handleMessageChange = event => {
-        this.setState({
-            messageText: event.target.value
-        });
-    }
+    // handleMessageChange() {
+    //     console.log('' + this.chatMessageRef.current.value);
+    //     this.props.dispatch(setMessage('' + this.chatMessageRef.current.value));
+    // }
     handleNickNameChange = event => {
         this.setState({
             userName: event.target.value
         });
+        this.props.dispatch(setUserName(event.target.value));
+
     }
     render() {
         return (
             <div className="chatWindow">
                 <ul className="chat" id="chatList" ref={this.chatRef}>
-                    {/* <li className='self'>
-                        <div className="msg">
-                            <p>Me</p>
-                            <div className='message'>Hello Lex!How are you?</div>
-                        </div>
-                    </li>
-                    <li className='other'>
-                        <div className="msg">
-                            <p>Lex</p>
-                            <div className='message'>Hello Ilya! I'm fine, how are you?</div>
-                        </div>
-                    </li> */}
                     {
-                        this.state.groupMessage.map(data => (
+                        this.props.groupMessage.map(data => (
                             <li key={data.id} className='other'>
                                 <div className='msg'>
                                     <p>{data.from}</p>
@@ -128,7 +109,7 @@ class Chat extends React.Component {
                             className="textarea input userName"
                             name="userName"
                             type="text"
-                            value={this.state.userName}
+                            value={this.props.userName}
                             placeholder="Nickname"
                             onChange={this.handleNickNameChange}
                         />
@@ -136,9 +117,9 @@ class Chat extends React.Component {
                             className="textarea input"
                             name="messageText"
                             type="text"
-                            value={this.state.messageText}
+                            ref={this.chatMessageRef}
                             placeholder="Enter your message..."
-                            onChange={this.handleMessageChange}
+                        // onChange={this.handleMessageChange}
                         />
                         <button className="submitButton" type="submit">Send</button>
                     </form>
@@ -148,4 +129,4 @@ class Chat extends React.Component {
         )
     }
 }
-export default Chat;
+export default connect(mapStateToProps)(Chat);
