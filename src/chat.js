@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import { connect } from 'react-redux';
+import PageVisibility from 'react-page-visibility';
 import { addMessage, addfirstMessage, setUserName } from './actions';
 const mapStateToProps = state => {
     return {
@@ -14,13 +16,13 @@ class Chat extends React.Component {
         this.isFirstMessage = true;
         this.chatRef = React.createRef();
         this.chatMessageRef = React.createRef();
+        this.state = {
+            isVisible: true,
+            isNotified: false
+        };
     }
     componentDidMount() {
-        // this.setState({
-        //     userName: localStorage.getItem('userName')
-        // })
         this.props.dispatch(setUserName(localStorage.getItem('userName')));
-        console.log('local Storage userName get ', localStorage.getItem('userName'));
         this.connecting();
     }
 
@@ -39,17 +41,22 @@ class Chat extends React.Component {
             // setTimeout(() => this.client.close(), 10000)
         };
         this.client.onmessage = (message) => {
-            console.log(message);
-
+            if (this.state.isVisible === false && this.state.isNotified === false) {
+                this.setState({
+                    isNotified: true
+                })
+                this.notifyMe();
+            }
             if (this.isFirstMessage) {
-
                 this.props.dispatch(addfirstMessage(JSON.parse(message.data)));
                 this.isFirstMessage = false;
                 this.scrollToBottom();
             }
             else {
                 this.props.dispatch(addMessage(JSON.parse(message.data)));
+                this.scrollToBottomIfNeeded();
             }
+
         };
         this.client.onclose = () => {
             console.log('WebSocket Client Closed');
@@ -58,6 +65,11 @@ class Chat extends React.Component {
                 console.log('trying to reconnect');
                 this.connecting();
             }, 2000)
+        }
+    }
+    scrollToBottomIfNeeded() {
+        if (this.chatRef.current.scrollTop - this.chatRef.current.children[this.chatRef.current.children.length - 1].offsetTop > -800) {
+            this.scrollToBottom();
         }
     }
     scrollToBottom = () => {
@@ -88,44 +100,73 @@ class Chat extends React.Component {
         this.props.dispatch(setUserName(event.target.value));
 
     }
+    handleVisibilityChange = isVisible => {
+        console.log('Visiblity status: ', isVisible);
+        this.setState({
+            isVisible: isVisible
+        })
+        if (isVisible === false) {
+            this.setState({
+                isNotified: false
+            })
+        }
+    }
+    notifyMe() {
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        }
+
+        else if (Notification.permission === "granted") {
+            var notification = new Notification("You recieved new message(s)!");
+        }
+
+        else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(function (permission) {
+                if (permission === "granted") {
+                    var notification = new Notification("You recieved new message(s)!");
+                }
+            });
+        }
+    }
     render() {
         return (
-            <div className="chatWindow">
-                <ul className="chat" id="chatList" ref={this.chatRef}>
-                    {
-                        this.props.groupMessage.map(data => (
-                            <li key={data.id} className='other'>
-                                <div className='msg'>
-                                    <p>{data.from}</p>
-                                    <div className='message'>{data.message}</div>
-                                </div>
-                            </li>
-                        ))
-                    }
-                </ul>
-                <div className="chatInputWrapper">
-                    <form onSubmit={this.handleSubmit} className="form">
-                        <input
-                            className="textarea input userName"
-                            name="userName"
-                            type="text"
-                            value={this.props.userName}
-                            placeholder="Nickname"
-                            onChange={this.handleNickNameChange}
-                        />
-                        <input
-                            className="textarea input"
-                            name="messageText"
-                            type="text"
-                            ref={this.chatMessageRef}
-                            placeholder="Enter your message..."
-                        // onChange={this.handleMessageChange}
-                        />
-                        <button className="submitButton" type="submit">Send</button>
-                    </form>
+            <PageVisibility onChange={this.handleVisibilityChange}>
+                <div className="chatWindow">
+                    <ul className="chat" id="chatList" ref={this.chatRef}>
+                        {
+                            this.props.groupMessage.map(data => (
+                                <li key={data.id} className='other'>
+                                    <div className='msg'>
+                                        <p>{data.from}</p>
+                                        <div className='message'>{data.message}</div>
+                                    </div>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                    <div className="chatInputWrapper">
+                        <form onSubmit={this.handleSubmit} className="form">
+                            <input
+                                className="textarea input userName"
+                                name="userName"
+                                type="text"
+                                value={this.props.userName}
+                                placeholder="Nickname"
+                                onChange={this.handleNickNameChange}
+                            />
+                            <input
+                                className="textarea input"
+                                name="messageText"
+                                type="text"
+                                ref={this.chatMessageRef}
+                                placeholder="Enter your message..."
+                            // onChange={this.handleMessageChange}
+                            />
+                            <button className="submitButton" type="submit">Send</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-
+            </PageVisibility>
         )
     }
 }
