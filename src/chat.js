@@ -2,6 +2,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PageVisibility from 'react-page-visibility';
+import { throttle } from 'lodash';
+import { Offline } from "react-detect-offline";
 import { addMessage, addfirstMessage, setUserName } from './actions';
 const mapStateToProps = state => {
     return {
@@ -15,37 +17,56 @@ class Chat extends React.Component {
         this.reconnectingInterval = null;
         this.isFirstMessage = true;
         this.chatRef = React.createRef();
-        this.chatMessageRef = React.createRef();
         this.state = {
+            messageText: '',
             isVisible: true,
-            isNotified: false
+            isOffline: false,
+            unsendMessages: []
         };
+        this.notifyMeThrottled = throttle(this.notifyMe, 1000 * 60 * 30);
+
     }
     componentDidMount() {
-        this.props.dispatch(setUserName(localStorage.getItem('userName')));
+        // this.props.dispatch(setUserName(localStorage.getItem('userName')));
         this.connecting();
+        window.addEventListener('online', this.handleConnectionChange);
+        window.addEventListener('offline', this.handleConnectionChange);
     }
-
+    componentWillUnmount() {
+        window.removeEventListener('online', this.handleConnectionChange);
+        window.removeEventListener('offline', this.handleConnectionChange);
+    }
+    handleConnectionChange = () => {
+        const condition = navigator.onLine ? 'online' : 'offline';
+        if (condition === 'offline') {
+            this.setState({
+                isOffline: true
+            })
+        }
+        else {
+            this.sendOfflineMessages();
+            this.setState({
+                isOffline: false
+            })
+        }
+    }
     connecting() {
         this.client = new WebSocket('ws://st-chat.shas.tel');
         this.isFirstMessage = true;
         this.client.onopen = () => {
             if (this.reconnectingInterval != null) {
-                console.log('WebSocket Client Reconnected');
                 clearInterval(this.reconnectingInterval);
                 this.reconnectingInterval = null;
+                console.log('Conection is reestablished')
             }
             else {
-                console.log('WebSocket Client Connected');
+                console.log('Connection is established');
             }
             // setTimeout(() => this.client.close(), 10000)
         };
         this.client.onmessage = (message) => {
-            if (this.state.isVisible === false && this.state.isNotified === false) {
-                this.setState({
-                    isNotified: true
-                })
-                this.notifyMe();
+            if (this.state.isVisible === false) {
+                this.notifyMeThrottled();
             }
             if (this.isFirstMessage) {
                 this.props.dispatch(addfirstMessage(JSON.parse(message.data)));
@@ -56,11 +77,10 @@ class Chat extends React.Component {
                 this.props.dispatch(addMessage(JSON.parse(message.data)));
                 this.scrollToBottomIfNeeded();
             }
-
         };
         this.client.onclose = () => {
             console.log('WebSocket Client Closed');
-
+            clearInterval(this.reconnectingInterval);
             this.reconnectingInterval = setInterval(() => {
                 console.log('trying to reconnect');
                 this.connecting();
@@ -80,36 +100,57 @@ class Chat extends React.Component {
         })
     };
     handleSubmit = event => {
-        console.log('submit message');
         event.preventDefault();
-        this.client.send(JSON.stringify({
-            from: this.props.userName,
-            message: this.chatMessageRef.current.value
-        }))
-        localStorage.setItem('userName', this.props.userName);
-        this.chatMessageRef.current.value = '';
-    }
-    // handleMessageChange() {
-    //     console.log('' + this.chatMessageRef.current.value);
-    //     this.props.dispatch(setMessage('' + this.chatMessageRef.current.value));
-    // }
-    handleNickNameChange = event => {
+        if (this.state.isOffline === false) {
+
+            this.sendMessage(this.props.userName,this.state.messageText);
+        } else {
+            this.setOfflineMessage();
+        }
         this.setState({
-            userName: event.target.value
-        });
+            messageText: ''
+        })
+    }
+    sendMessage(from, message) {
+        this.client.send(JSON.stringify({
+            from: from,
+            message: message
+        }))
+    }
+    sendOfflineMessages() {
+        if (this.state.unsendMessages.length !== 0) {
+            this.state.unsendMessages.forEach((element) => {
+                this.sendMessage(element.from,element.message);
+            })
+            this.setState({
+                unsendMessages: []
+            })
+        }
+    }
+    setOfflineMessage() {
+        this.setState({
+            unsendMessages: this.state.unsendMessages.concat({
+                from: this.props.userName,
+                message: this.state.messageText
+            })
+        })
+    }
+    handleMessageChange = event => {
+        this.setState({
+            messageText: event.target.value
+        })
+    }
+    handleNickNameChange = event => {
+        // this.setState({
+        //     userName: event.target.value
+        // });
         this.props.dispatch(setUserName(event.target.value));
 
     }
     handleVisibilityChange = isVisible => {
-        console.log('Visiblity status: ', isVisible);
         this.setState({
             isVisible: isVisible
         })
-        if (isVisible === false) {
-            this.setState({
-                isNotified: false
-            })
-        }
     }
     notifyMe() {
         if (!("Notification" in window)) {
@@ -132,11 +173,27 @@ class Chat extends React.Component {
         return (
             <PageVisibility onChange={this.handleVisibilityChange}>
                 <div className="chatWindow">
+                    <Offline >
+                        <div className="offlineWrapper">
+                            <p className="offline">Offline mode </p>
+                        </div>
+                    </Offline>
                     <ul className="chat" id="chatList" ref={this.chatRef}>
                         {
                             this.props.groupMessage.map(data => (
                                 <li key={data.id} className='other'>
-                                    <div className='msg'>
+                                    <div className='msg whiteBackground'>
+                                        <p>{data.from}</p>
+                                        <div className='message'>{data.message}</div>
+                                        <time>{new Date(data.time).toLocaleTimeString()}</time>
+                                    </div>
+                                </li>
+                            ))
+                        }
+                        {
+                            this.state.unsendMessages.map((data, index) => (
+                                <li key={index} className='other'>
+                                    <div className='msg grayBackground'>
                                         <p>{data.from}</p>
                                         <div className='message'>{data.message}</div>
                                     </div>
@@ -158,9 +215,9 @@ class Chat extends React.Component {
                                 className="textarea input"
                                 name="messageText"
                                 type="text"
-                                ref={this.chatMessageRef}
+                                value={this.state.messageText}
                                 placeholder="Enter your message..."
-                            // onChange={this.handleMessageChange}
+                                onChange={this.handleMessageChange}
                             />
                             <button className="submitButton" type="submit">Send</button>
                         </form>

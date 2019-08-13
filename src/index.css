@@ -1,3 +1,8 @@
+#root{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .App {
     text-align: center;
     display: flex;
@@ -17,9 +22,12 @@
     display: flex;
     flex-direction: column;
 }
-
+.form input {
+    box-sizing: border-box;
+    max-width:100%;
+    width: 80%;
+}
 .form input[type="text"] {
-    width: 600px;
     height: 30px;
     margin-bottom: 10px;
 }
@@ -64,19 +72,14 @@ body {
 }
 
 .chatWindow {
-    /* display: grid;
-    grid-column-start: 2;
-    grid-column-end: 9;
-    grid-row-start: 1;
-    grid-row-end: 190; */
+
+    min-width:320px;
+    width:80%;
     background: rgb(233, 229, 229);
     border-radius: 5px;
 }
 
 .chatInputWrapper {
-    display: grid;
-    grid-row-start: 190;
-    grid-row-end: 190;
 }
 
 ::-webkit-scrollbar {
@@ -90,7 +93,7 @@ body {
     background: none;
     margin: 0;
     padding: 0 0 50px 0;
-    margin-top: 60px;
+    /* margin-top: 60px; */
     margin-bottom: 10px;
     max-height: 400px;
     overflow: scroll;
@@ -104,12 +107,14 @@ body {
 }
 
 .other .msg {
+    min-width: 50px;
     order: 1;
     border-top-left-radius: 0px;
     box-shadow: -1px 2px 0px #d4d4d4;
+    overflow-wrap: break-word;
 }
 
-.other:before {
+.other.whiteBackground:before {
     content: "";
     position: relative;
     top: 0px;
@@ -121,7 +126,18 @@ body {
     border-left-color: transparent;
     border-bottom-color: transparent;
 }
-
+.other.grayBackground:before {
+    content: "";
+    position: relative;
+    top: 0px;
+    right: 0px;
+    left: 40px;
+    width: 0px;
+    height: 0px;
+    border: 5px solid lightgray;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+}
 .self {
     justify-content: flex-end;
     align-items: flex-end;
@@ -132,9 +148,13 @@ body {
     border-bottom-right-radius: 0px;
     box-shadow: 1px 2px 0px #d4d4d4;
 }
-
-.msg {
+.whiteBackground {
     background: white;
+}
+.grayBackground {
+    background:lightgray;
+}
+.msg {
     min-width: fit-content;
     padding: 10px;
     border-radius: 10px;
@@ -204,8 +224,6 @@ body {
 /* T Y P E */
 
 input.textarea {
-    width: 100%;
-    height: 50px;
     background: #fafafa;
     border: none;
     outline: none;
@@ -229,4 +247,14 @@ input.textarea {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+}
+.offline {
+    width: max-content;
+    background-color: lightgray;
+    padding: 10px;
+    border-radius: 20px;
+}
+.offlineWrapper {
+    display: flex;
+    justify-content: center;
 }
