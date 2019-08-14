@@ -2,7 +2,6 @@
   "name": "chat-rs-school",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ildorado.github.io/Chat/",
   "dependencies": {
     "@livechat/ui-kit": "^0.4.0-5",
     "gh-pages": "^2.1.1",
