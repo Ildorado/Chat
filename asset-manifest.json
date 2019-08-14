@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/gh-Pages/static/css/main.53cc216a.chunk.css",
-    "main.js": "/gh-Pages/static/js/main.3d2dc0a4.chunk.js",
-    "main.js.map": "/gh-Pages/static/js/main.3d2dc0a4.chunk.js.map",
-    "runtime~main.js": "/gh-Pages/static/js/runtime~main.282a5d2b.js",
-    "runtime~main.js.map": "/gh-Pages/static/js/runtime~main.282a5d2b.js.map",
-    "static/js/2.d6851415.chunk.js": "/gh-Pages/static/js/2.d6851415.chunk.js",
-    "static/js/2.d6851415.chunk.js.map": "/gh-Pages/static/js/2.d6851415.chunk.js.map",
-    "index.html": "/gh-Pages/index.html",
-    "precache-manifest.61109cd300586ef66e50e3f334e8bf93.js": "/gh-Pages/precache-manifest.61109cd300586ef66e50e3f334e8bf93.js",
-    "service-worker.js": "/gh-Pages/service-worker.js",
-    "static/css/main.53cc216a.chunk.css.map": "/gh-Pages/static/css/main.53cc216a.chunk.css.map"
+    "main.css": "/Chat/static/css/main.53cc216a.chunk.css",
+    "main.js": "/Chat/static/js/main.b96d593b.chunk.js",
+    "main.js.map": "/Chat/static/js/main.b96d593b.chunk.js.map",
+    "runtime~main.js": "/Chat/static/js/runtime~main.993c241a.js",
+    "runtime~main.js.map": "/Chat/static/js/runtime~main.993c241a.js.map",
+    "static/js/2.d6851415.chunk.js": "/Chat/static/js/2.d6851415.chunk.js",
+    "static/js/2.d6851415.chunk.js.map": "/Chat/static/js/2.d6851415.chunk.js.map",
+    "index.html": "/Chat/index.html",
+    "precache-manifest.35412ad08953e4790fb3a140f4e6b609.js": "/Chat/precache-manifest.35412ad08953e4790fb3a140f4e6b609.js",
+    "service-worker.js": "/Chat/service-worker.js",
+    "static/css/main.53cc216a.chunk.css.map": "/Chat/static/css/main.53cc216a.chunk.css.map"
   }
 }
