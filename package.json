@@ -2,8 +2,10 @@
   "name": "chat-rs-school",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://ildorado.github.io",
   "dependencies": {
     "@livechat/ui-kit": "^0.4.0-5",
+    "gh-pages": "^2.1.1",
     "lodash": "^4.17.15",
     "react": "^16.9.0",
     "react-detect-offline": "^2.4.0",
@@ -17,6 +19,8 @@
     "uuid": "^3.3.2"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -b master -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
