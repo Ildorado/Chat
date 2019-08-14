@@ -254,7 +254,13 @@ input.textarea {
     padding: 10px;
     border-radius: 20px;
 }
-.offlineWrapper {
+.online {
+    width: max-content;
+    background-color: lightgreen;
+    padding: 10px;
+    border-radius: 20px;
+}
+.statusWrapper {
     display: flex;
     justify-content: center;
 }

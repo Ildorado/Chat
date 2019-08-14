@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PageVisibility from 'react-page-visibility';
 import { throttle } from 'lodash';
-import { Offline } from "react-detect-offline";
+import { Offline, Online } from "react-detect-offline";
 import { addMessage, addfirstMessage, setUserName } from './actions';
 const mapStateToProps = state => {
     return {
@@ -93,7 +93,6 @@ class Chat extends React.Component {
         }
     }
     scrollToBottom = () => {
-        // this.chatRef.current.scrollTop = this.chatRef.current.scrollHeight;
         this.chatRef.current.scrollTo({
             top: this.chatRef.current.scrollHeight,
             behavior: 'auto'
@@ -103,7 +102,7 @@ class Chat extends React.Component {
         event.preventDefault();
         if (this.state.isOffline === false) {
 
-            this.sendMessage(this.props.userName,this.state.messageText);
+            this.sendMessage(this.props.userName, this.state.messageText);
         } else {
             this.setOfflineMessage();
         }
@@ -120,7 +119,7 @@ class Chat extends React.Component {
     sendOfflineMessages() {
         if (this.state.unsendMessages.length !== 0) {
             this.state.unsendMessages.forEach((element) => {
-                this.sendMessage(element.from,element.message);
+                this.sendMessage(element.from, element.message);
             })
             this.setState({
                 unsendMessages: []
@@ -174,10 +173,15 @@ class Chat extends React.Component {
             <PageVisibility onChange={this.handleVisibilityChange}>
                 <div className="chatWindow">
                     <Offline >
-                        <div className="offlineWrapper">
+                        <div className="statusWrapper">
                             <p className="offline">Offline mode </p>
                         </div>
                     </Offline>
+                    <Online>
+                        <div className="statusWrapper">
+                            <p className="online">Online mode </p>
+                        </div>
+                    </Online>
                     <ul className="chat" id="chatList" ref={this.chatRef}>
                         {
                             this.props.groupMessage.map(data => (
