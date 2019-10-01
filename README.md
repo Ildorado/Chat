@@ -1,3 +1,8 @@
+task - https://github.com/rolling-scopes-school/tasks/blob/2018-Q3/tasks/chat.md </br>
+Screenshot - https://imgur.com/GgfkuLJ </br>
+Link to surge, where the chat is deployed - http://permissible-horse.surge.sh/ </br>
+15.08.2019 / 15.08.2019 23:59 </br>
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
